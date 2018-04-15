@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import {handleTurn} from './actions'
+import {store} from './stores'
 
 function Square(props) {
   return (
@@ -11,12 +13,23 @@ function Square(props) {
 }
 
 class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
+  state = {
+    squares: Array(9).fill(null),
+    xIsNext: true
+  }
+
+  componentDidMount() {
+    this.unsubscribe = store.subscribe(() => {
+      const appState = store.getState()
+      this.setState({
+        squares: appState.squares,
+        xIsNext: appState.xIsNext
+      })
+    })
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe()
   }
 
   handleClick(i) {
@@ -24,16 +37,16 @@ class Board extends React.Component {
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      squares,
-      xIsNext: !this.state.xIsNext,
-    });
+    const square = {
+      number: i,
+      marker: this.state.xIsNext ? 'X' : 'O'
+    }
+    handleTurn(square);
   }
 
   renderSquare(i) {
-    return <Square 
-      value={this.state.squares[i]} 
+    return <Square
+      value={this.state.squares[i]}
       onClick={() => this.handleClick(i)}
     />;
 
@@ -41,7 +54,7 @@ class Board extends React.Component {
 
   render() {
     const winner = calculateWinner(this.state.squares);
-    let status; 
+    let status;
     if (winner) {
       status = `Winner: ${winner}`;
     } else {
