@@ -16,7 +16,6 @@ class Board extends React.Component {
   state = {
     squares: Array(9).fill(null),
     xIsNext: true
-  }
 
   componentDidMount() {
     this.unsubscribe = store.subscribe(() => {
